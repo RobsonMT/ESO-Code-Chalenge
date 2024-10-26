@@ -1,21 +1,30 @@
 import { useEffect } from "react";
 import { usePokemon } from "../providers/hooks";
-import Header from "../components/Header";
-import Image from "../components/Imagen";
 import { FaInfoCircle } from "react-icons/fa";
+import Header from "../components/Header";
+import Image from "../components/Image";
 
 const HomePage = () => {
-  const { loading, globalPokemons, getGlobalPokemons } = usePokemon();
+  const {
+    loading,
+    allPokemons,
+    previousPage,
+    nextPage,
+    // globalPokemons,
+    getAllPokemons,
+    // getGlobalPokemons,
+  } = usePokemon();
 
   useEffect(() => {
-    getGlobalPokemons();
+    // getGlobalPokemons();
+    getAllPokemons(nextPage);
   }, []);
 
   return (
     <div className="flex flex-col justify-center items-center container">
       <Header />
       {loading ? (
-        <div className="flex flex-col justify-center items-center">
+        <div className="flex flex-col justify-center items-center h-[80vh]">
           <p>Carregando...</p>
           <img
             src="https://i.gifer.com/VgI.gif"
@@ -25,12 +34,15 @@ const HomePage = () => {
         </div>
       ) : (
         <div className="w-full grid grid-cols-[repeat(auto-fill,_minmax(230px,_1fr))] gap-4">
-          {globalPokemons.map((pokemon) => {
+          {allPokemons?.map((pokemon) => {
             return (
               <div
                 key={pokemon.id}
                 className="border relative flex flex-col items-center p-4 rounded-lg shadow-lg"
               >
+                <div className="absolute left-0 top-0 p-4 w-10 h-10">
+                  #{pokemon.id}
+                </div>
                 <div className="absolute right-0 top-0 p-4 w-10 h-10">
                   <FaInfoCircle />
                 </div>
@@ -43,7 +55,7 @@ const HomePage = () => {
                     width={180}
                     height={180}
                     objectFit="cover"
-                    className="rounded-lg border"
+                    className="rounded-lg bg-cover bg-center"
                   />
                 </div>
 
@@ -60,6 +72,11 @@ const HomePage = () => {
           })}
         </div>
       )}
+
+      <div className="container flex justify-between w-full">
+        <button onClick={() => getAllPokemons(previousPage!)}>Previous</button>
+        <button onClick={() => getAllPokemons(nextPage)}>Next</button>
+      </div>
     </div>
   );
 };
