@@ -3,12 +3,7 @@ import Pokedex from "../assets/pokedex.png";
 const Header = () => {
   return (
     <div>
-      <img
-        className="image"
-        src={Pokedex}
-        alt="pokedex-logo"
-        style={{ width: "280px" }}
-      />
+      <img className="w-[280px]" src={Pokedex} alt="pokedex-logo" />
     </div>
   );
 };
