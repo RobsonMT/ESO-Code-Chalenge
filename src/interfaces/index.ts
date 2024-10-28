@@ -8,6 +8,21 @@ export interface IPokemonResponse {
   };
 }
 
+export interface IPokemon {
+  name: string;
+  url: string;
+}
+
+export interface IType {
+  name: string;
+  url: string;
+}
+
+export interface IHabitat {
+  name: string;
+  url: string;
+}
+
 interface Ability {
   ability: {
     name: string;
@@ -82,7 +97,7 @@ interface Type {
   };
 }
 
-export interface IPokemon {
+export interface IPokemonDetail {
   abilities: Ability[];
   base_experience: number;
   cries: Cry;
