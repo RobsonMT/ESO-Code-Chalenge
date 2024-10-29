@@ -1,10 +1,6 @@
 import React, { useState } from "react";
 import { usePokemon } from "../providers/hooks";
 
-// interface SearchFormProps {
-//   onSearch: (type: string, ability: string, name: string) => void;
-// }
-
 const SearchForm = () => {
   const [name, setName] = useState<string>("");
   const [type, setType] = useState<string>("");
@@ -12,18 +8,24 @@ const SearchForm = () => {
 
   const { types, habitats, handleFilter } = usePokemon();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    handleFilter(type, habitat, name);
+  const handleType = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setType(e.target.value);
+    handleFilter(e.target.value, habitat, name);
+  };
+
+  const handleHabitat = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setHabitat(e.target.value);
+    handleFilter(type, e.target.value, name);
+  };
+
+  const handleName = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setName(e.target.value);
+    handleFilter(type, habitat, e.target.value);
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-row gap-4 mb-8 mt-8">
-      <select
-        value={type}
-        onChange={(e) => setType(e.target.value)}
-        className="p-2 border"
-      >
+    <form className="flex flex-col md:flex-row gap-4 mb-8 mt-8">
+      <select value={type} onChange={handleType} className="p-2 border">
         <option value="">Select the type</option>
         {types?.map((t) => (
           <option key={t.name} value={t.name}>
@@ -32,11 +34,7 @@ const SearchForm = () => {
         ))}
       </select>
 
-      <select
-        value={habitat}
-        onChange={(e) => setHabitat(e.target.value)}
-        className="p-2 border"
-      >
+      <select value={habitat} onChange={handleHabitat} className="p-2 border">
         <option value="">Select the habitat</option>
         {habitats?.map((a) => (
           <option key={a.name} value={a.name}>
@@ -49,13 +47,9 @@ const SearchForm = () => {
         type="text"
         placeholder="Name"
         value={name}
-        onChange={(e) => setName(e.target.value)}
+        onChange={handleName}
         className="p-2 border"
       />
-
-      <button type="submit" className="bg-blue-500 text-white p-2">
-        Search
-      </button>
     </form>
   );
 };

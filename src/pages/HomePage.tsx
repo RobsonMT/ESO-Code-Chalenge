@@ -1,30 +1,46 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { usePokemon } from "../providers/hooks";
-import { FaInfoCircle } from "react-icons/fa";
-import { MdOutlineNavigateNext, MdOutlineSkipPrevious } from "react-icons/md";
+import { FaAngleLeft, FaAngleRight } from "react-icons/fa";
+import { IPokemonDetail } from "../interfaces";
 import Header from "../components/Header";
-import Image from "../components/Image";
-import SearchForm from "../components/searchForm";
-import { Link } from "react-router-dom";
+import SearchForm from "../components/SearchForm";
+import PokemonCard from "../components/PokemonCard";
 
 const HomePage = () => {
-  const [currentPage, setCurrentPage] = useState<number>(1);
+  const {
+    loading,
+    searching,
+    currentPage,
+    setCurrentPage,
+    globalPokemons,
+    filteredPokemons,
+    getGlobalPokemons,
+  } = usePokemon();
 
-  const { loading, globalPokemons, filteredPokemons, getGlobalPokemons } =
-    usePokemon();
-
-  const getPaginatedItems = (page: number) => {
+  const getPaginatedItems = (page: number, items: IPokemonDetail[]) => {
     const startIndex = (page - 1) * 10;
     const endIndex = startIndex + 10;
-    return globalPokemons.slice(startIndex, endIndex);
+    return items.slice(startIndex, endIndex);
   };
 
-  const paginatedItems = getPaginatedItems(currentPage);
+  const paginatedGlobalItems = getPaginatedItems(currentPage, globalPokemons);
+  const paginatedFilteredItems = getPaginatedItems(
+    currentPage,
+    filteredPokemons
+  );
 
-  const totalPages = Math.ceil(globalPokemons.length / 10);
+  const totalGlobalItemsPages = Math.ceil(globalPokemons.length / 10);
+  const totalFilteredItemsPages = Math.ceil(filteredPokemons.length / 10);
 
   const handleNextPage = () => {
-    if (currentPage < totalPages) {
+    if (filteredPokemons.length) {
+      if (currentPage < totalFilteredItemsPages) {
+        setCurrentPage(currentPage + 1);
+      } else {
+        return false;
+      }
+    }
+    if (currentPage < totalGlobalItemsPages) {
       setCurrentPage(currentPage + 1);
     }
   };
@@ -39,78 +55,61 @@ const HomePage = () => {
     getGlobalPokemons();
   }, []);
 
+  if (loading) {
+    return (
+      <div className="flex flex-col justify-center items-center h-[80vh]">
+        <p>Carregando...</p>
+        <img
+          src="https://i.gifer.com/VgI.gif"
+          alt="loading-gif"
+          className="w-[200px]"
+        ></img>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col justify-center items-center container">
       <Header />
       <SearchForm />
-      {loading ? (
-        <div className="flex flex-col justify-center items-center h-[80vh]">
-          <p>Carregando...</p>
-          <img
-            src="https://i.gifer.com/VgI.gif"
-            alt="loading-gif"
-            className="w-[200px]"
-          ></img>
-        </div>
-      ) : (
+      {Boolean(filteredPokemons.length) && searching && (
         <div className="w-full grid grid-cols-[repeat(auto-fill,_minmax(230px,_1fr))] gap-4">
-          {filteredPokemons.map((pokemon) => {
-            return (
-              <div
-                key={pokemon.id}
-                className="border relative flex flex-col items-center p-4 rounded-lg shadow-lg"
-              >
-                <Link to={`pokemon/${pokemon.id}`}>
-                  <div className="absolute left-0 top-0 p-4 w-10 h-10">
-                    #{pokemon.id}
-                  </div>
-                  <div className="absolute right-0 top-0 p-4 w-10 h-10">
-                    <FaInfoCircle />
-                  </div>
-                  <div className="flex justify-center items-center">
-                    <Image
-                      src={pokemon.sprites.front_default!}
-                      alt={pokemon.name}
-                      srcSet="imagem-medio.jpg 2x, imagem-alta.jpg 3x"
-                      sizes="(max-width: 180px) 20vw"
-                      width={180}
-                      height={180}
-                      objectFit="cover"
-                      className="rounded-lg bg-cover bg-center"
-                    />
-                  </div>
-
-                  <div>
-                    <h2 className="text-xl">{pokemon.name}</h2>
-                    <div>
-                      {pokemon.types.map((p) => (
-                        <p key={p.type.name}>{p.type.name}</p>
-                      ))}
-                    </div>
-                  </div>
-                </Link>
-              </div>
-            );
+          {paginatedFilteredItems.map((pokemon) => {
+            return <PokemonCard key={pokemon.id} pokemon={pokemon} />;
           })}
         </div>
       )}
 
-      <div className="container flex justify-between w-full mt-4">
+      {searching && Boolean(filteredPokemons.length === 0) && (
+        <div>No pokemon found for search</div>
+      )}
+
+      {!searching && (
+        <div className="w-full grid grid-cols-[repeat(auto-fill,_minmax(230px,_1fr))] gap-4">
+          {paginatedGlobalItems.map((pokemon) => {
+            return <PokemonCard key={pokemon.id} pokemon={pokemon} />;
+          })}
+        </div>
+      )}
+
+      <div className="container flex flex-row justify-between w-full mt-4">
         <button
           className="border p-2 rounded-lg shadow-lg inline-flex justify-center align-baseline"
           onClick={handlePrevPage}
         >
-          <MdOutlineSkipPrevious className="w-6 h-6" />
+          <FaAngleLeft className="w-6 h-6" />
           Previous
         </button>
         <div>
-          Page {currentPage} of {totalPages}
+          Page {currentPage} of{" "}
+          {searching && filteredPokemons.length && totalFilteredItemsPages}
+          {!searching && totalGlobalItemsPages}
         </div>
         <button
           className="border p-2 rounded-lg shadow-lg inline-flex justify-center align-baseline"
           onClick={handleNextPage}
         >
-          Next <MdOutlineNavigateNext className="w-6 h-6" />
+          Next <FaAngleRight className="w-6 h-6" />
         </button>
       </div>
     </div>

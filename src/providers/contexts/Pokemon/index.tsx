@@ -16,8 +16,11 @@ interface PokemonProviderData {
   loading: boolean;
   globalPokemons: IPokemonDetail[];
   filteredPokemons: IPokemonDetail[];
+  searching: boolean;
   types: IType[];
   habitats: IHabitat[];
+  currentPage: number;
+  setCurrentPage: React.Dispatch<React.SetStateAction<number>>;
   getGlobalPokemons: () => Promise<void>;
   handleFilter: (type: string, habitat: string, name: string) => void;
 }
@@ -28,13 +31,16 @@ const PokemonContext = createContext<PokemonProviderData>(
 
 const PokemonProvider = (props: IProps) => {
   const [loading, setLoading] = useState<boolean>(true);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [searching, setSearching] = useState<boolean>(false);
+
+  const [types, setTypes] = useState<IType[]>([]);
+  const [habitats, setHabitats] = useState<IHabitat[]>([]);
+
   const [globalPokemons, setGlobalPokemons] = useState<IPokemonDetail[]>([]);
   const [filteredPokemons, setFilteredPokemons] = useState<IPokemonDetail[]>(
     []
   );
-
-  const [types, setTypes] = useState<IType[]>([]);
-  const [habitats, setHabitats] = useState<IHabitat[]>([]);
 
   const getGlobalPokemons = useCallback(async () => {
     const response = await api.get("pokemon?limit=100000&offset=0");
@@ -62,6 +68,11 @@ const PokemonProvider = (props: IProps) => {
   }, []);
 
   const handleFilter = async (type: string, habitat: string, name: string) => {
+    setCurrentPage(1);
+
+    if (type || habitat || name) {
+      setSearching(true);
+    }
     if (type) {
       const filteredResults = globalPokemons.filter((pokemon) =>
         pokemon.types.map((x) => x.type.name).includes(type)
@@ -176,10 +187,13 @@ const PokemonProvider = (props: IProps) => {
     <PokemonContext.Provider
       value={{
         loading,
-        globalPokemons,
         types,
         habitats,
+        globalPokemons,
         filteredPokemons,
+        searching,
+        currentPage,
+        setCurrentPage,
         getGlobalPokemons,
         handleFilter,
       }}

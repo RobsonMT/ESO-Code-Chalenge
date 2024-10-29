@@ -1,18 +1,3 @@
-export interface IPokemonResponse {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: {
-    name: string;
-    url: string;
-  };
-}
-
-export interface IPokemon {
-  name: string;
-  url: string;
-}
-
 export interface IType {
   name: string;
   url: string;
